@@ -13,19 +13,19 @@ services:
       WEBPASSWORD: ${WEBPASSWORD}
     volumes:
       - './data/etc-pihole:/etc/pihole'
-      - './data/etc-dnsmasq.d:/etc/dnsmasq.d'    
+      - './data/etc-dnsmasq.d:/etc/dnsmasq.d'
     #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
     cap_add:
-      - NET_ADMIN # Recommended but not required (DHCP needs NET_ADMIN)      
+      - NET_ADMIN # Recommended but not required (DHCP needs NET_ADMIN)
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     networks:
       - traefik
     labels:
-      my.zone: zone1
+      my.zone: dirtybit
       traefik.enable: true
-      traefik.http.routers.pihole.rule: Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
+      traefik.http.routers.pihole.rule: Host(`${SUBDOMAIN:-pihole}.${DOMAIN}`)
       traefik.http.routers.pihole.entrypoints: websecure
       traefik.http.services.pihole.loadbalancer.server.port: 80
       traefik.http.routers.pihole.middlewares: "pihole-admin"
@@ -33,4 +33,4 @@ services:
 
 networks:
   traefik:
-    name: zone1
+    name: dirtybit

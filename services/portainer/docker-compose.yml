@@ -18,7 +18,7 @@ services:
     labels:
       my.zone: dirtybit
       traefik.enable: true
-      traefik.http.routers.portainer.rule: Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
+      traefik.http.routers.portainer.rule: Host(`${SUBDOMAIN:-portainer}.${DOMAIN}`)
       traefik.http.routers.portainer.entrypoints: websecure
       traefik.http.services.portainer.loadbalancer.server.port: 9000
 

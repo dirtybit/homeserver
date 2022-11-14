@@ -15,3 +15,4 @@ custom_services/*
 !custom_services/.gitignore
 nginx.conf
 TODO.md
+.DS_Store

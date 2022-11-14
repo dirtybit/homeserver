@@ -11,12 +11,13 @@ services:
     networks:
       - traefik
     labels:
-      my.zone: zone1
+      my.zone: dirtybit
       traefik.enable: true
-      traefik.http.routers.dozzle.rule: Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
+      traefik.http.routers.dozzle.rule: Host(`${SUBDOMAIN:-dozzle}.${DOMAIN}`)
       traefik.http.routers.dozzle.entrypoints: websecure
       traefik.http.services.dozzle.loadbalancer.server.port: 8080
 
 networks:
   traefik:
-    name: zone1
+    name: dirtybit
+    external: true

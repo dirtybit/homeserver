@@ -48,9 +48,9 @@ services:
       traefik.enable: true
       traefik.http.routers.traefik.entrypoints: web
       traefik.http.routers.traefik.tls: true
-      traefik.http.routers.traefik.tls.domains[0].main: ${SERVER_DOMAIN}
-      traefik.http.routers.traefik.tls.domains[0].sans: "*.${SERVER_DOMAIN}"
-      traefik.http.routers.dashboard.rule: Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
+      traefik.http.routers.traefik.tls.domains[0].main: ${DOMAIN}
+      traefik.http.routers.traefik.tls.domains[0].sans: "*.${DOMAIN}"
+      traefik.http.routers.dashboard.rule: Host(`${SUBDOMAIN}.${DOMAIN}`)
       traefik.http.routers.dashboard.service: api@internal
       traefik.http.routers.traefik.tls.certresolver: myresolver
       traefik.http.routers.traefik.service: api@internal
@@ -71,12 +71,13 @@ services:
     labels:
       my.zone: dirtybit
       traefik.enable: true
-      traefik.http.routers.whoami.rule: Host(`whoami.${SERVER_DOMAIN}`)
+      traefik.http.routers.whoami.rule: Host(`whoami.${DOMAIN}`)
       traefik.http.routers.whoami.entrypoints: websecure
 
 networks:
   traefik:
     name: dirtybit
+    external: true
 
 volumes:
   traefik-letsencrypt:
