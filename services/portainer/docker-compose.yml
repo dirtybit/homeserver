@@ -1,10 +1,14 @@
 version: "3.6"
 services:
   portainer:
-    image: portainer/portainer
+    image: portainer/portainer-ce:latest
+    ports:
+      - 9000:9000
+    expose:
+      - 9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./data:/data
+      - portainer_data:/data
     container_name: portainer
     restart: unless-stopped
     security_opt:
@@ -12,12 +16,16 @@ services:
     networks:
       - traefik
     labels:
-      my.zone: zone1
+      my.zone: dirtybit
       traefik.enable: true
       traefik.http.routers.portainer.rule: Host(`${SUB_DOMAIN}.${SERVER_DOMAIN}`)
       traefik.http.routers.portainer.entrypoints: websecure
       traefik.http.services.portainer.loadbalancer.server.port: 9000
 
+volumes:
+  portainer_data:
+
 networks:
   traefik:
-    name: zone1
+    name: dirtybit
+    external: true
