@@ -8,9 +8,11 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
       - "67:67/udp" # Only required if you are using Pi-hole as your DHCP server
+      - "3141:80" # Expose admin panel to the host through :3141
     environment:
       TZ: ${TZ}
       WEBPASSWORD: ${WEBPASSWORD}
+      DNSMASQ_LISTENING: all
     volumes:
       - './data/etc-pihole:/etc/pihole'
       - './data/etc-dnsmasq.d:/etc/dnsmasq.d'

@@ -1,0 +1,10 @@
+Before running the pi-hole service disable local DNS service on Ubuntu
+Source: https://www.turek.dev/posts/disable-systemd-resolved-cleanly/
+
+$ sudo mkdir -p /etc/systemd/resolved.conf.d
+$ sudo sh -c 'echo "[Resolve]" >> /etc/systemd/resolved.conf.d/disable-stub.conf'
+$ sudo sh -c 'echo "DNSStubListener=no" >> /etc/systemd/resolved.conf.d/disable-stub.conf'
+$ sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+$ sudo systemctl restart systemd-resolved
+
+
