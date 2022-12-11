@@ -1,0 +1,23 @@
+version: "3.6"
+
+services:
+  silverbullet:
+    build: ./
+    image: silverbullet
+    container_name: silverbullet
+    volumes:
+      - $NOTES_DIR:/space
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      my.zone: dirtybit
+      traefik.enable: true
+      traefik.http.routers.silverbullet.rule: Host(`${SUBDOMAIN:-silverbullet}.${DOMAIN}`)
+      traefik.http.routers.silverbullet.entrypoints: websecure
+      traefik.http.services.silverbullet.loadbalancer.server.port: 3000
+
+networks:
+  traefik:
+    name: dirtybit
+    external: true
