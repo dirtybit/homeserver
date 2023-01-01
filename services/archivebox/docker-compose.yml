@@ -1,0 +1,23 @@
+version: "3.6"
+
+services:
+  archivebox:
+    image: archivebox/archivebox:master
+    command: server --quick-init 0.0.0.0:8000
+    env_file:
+      - .env
+    volumes:
+      - $DATA_PATH:/data
+    networks:
+      - traefik
+    labels:
+      my.zone: dirtybit
+      traefik.enable: true
+      traefik.http.routers.archivebox.rule: Host(`${SUBDOMAIN:-archive}.${DOMAIN}`)
+      traefik.http.routers.archivebox.entrypoints: websecure
+      traefik.http.services.archivebox.loadbalancer.server.port: 8000
+
+networks:
+  traefik:
+    name: dirtybit
+    external: true
