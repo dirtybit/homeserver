@@ -4,7 +4,7 @@ services:
   tubearchivist:
     container_name: tube-archivist
     restart: unless-stopped
-    image: bbilly1/tubearchivist
+    image: bbilly1/tubearchivist:latest
     volumes:
       - $MEDIA_PATH:/youtube
       - cache:/cache
@@ -34,7 +34,7 @@ services:
     networks:
       - traefik
   archivist-es:
-    image: bbilly1/tubearchivist-es         # only for amd64, or use official es 8.4.3
+    image: bbilly1/tubearchivist-es:latest         # only for amd64, or use official es 8.4.3
     container_name: archivist-es
     restart: unless-stopped
     environment:
