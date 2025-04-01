@@ -38,6 +38,8 @@ services:
       - traefik
     security_opt:
       - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - traefik-letsencrypt:/letsencrypt

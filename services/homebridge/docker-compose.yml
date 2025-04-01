@@ -1,0 +1,31 @@
+version: "3.6"
+services:
+  homebridge:
+    container_name: homebridge
+    image: homebridge/homebridge:latest
+    restart: always
+    network_mode: host
+    volumes:
+      - homebridge_data:/homebridge
+    logging:
+      driver: json-file
+      options:
+        max-size: "100mb"
+        max-file: "1"
+    # networks:
+    #   - traefik
+    labels:
+      my.zone: dirtybit
+      traefik.enable: true
+      traefik.http.routers.homebridge.rule: Host(`${SUBDOMAIN:-homebridge}.${DOMAIN}`)
+      traefik.http.routers.homebridge.entrypoints: websecure
+      traefik.http.services.homebridge.loadbalancer.server.port: 8581
+      traefik.http.services.homebridge.loadbalancer.server.url: "http://host.docker.internal:8581"
+
+volumes:
+  homebridge_data:
+
+# networks:
+#   traefik:
+#     name: dirtybit
+#     external: true
