@@ -1,0 +1,38 @@
+version: "3.6"
+services:
+  pdf2html:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pdf2html
+    ports:
+      - 7777:9000
+    expose:
+      - 7777
+    volumes:
+      - ./app:/app
+      - pdf2html_data:/data
+    container_name: pdf2html
+    restart: unless-stopped
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - traefik
+    labels:
+      my.zone: dirtybit
+      traefik.enable: true
+      traefik.http.routers.pdf2html.rule: Host(`${SUBDOMAIN:-p2h}.${DOMAIN}`)
+      traefik.http.routers.pdf2html.entrypoints: websecure
+      traefik.http.services.pdf2html.loadbalancer.server.port: 9000
+
+volumes:
+  pdf2html_data:
+
+networks:
+  traefik:
+    name: dirtybit
+    external: true

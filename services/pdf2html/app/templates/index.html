@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to HTML Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .files-list {
+            margin-top: 30px;
+        }
+
+        .file-item {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .file-item a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .file-item a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            text-align: center;
+            display: none;
+        }
+
+        .loading:after {
+            content: '.';
+            animation: dots 1s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>PDF to HTML Converter</h1>
+
+        <div class="form-section">
+            <h2>Upload a PDF File</h2>
+            <form id="file-upload-form">
+                <div class="form-group">
+                    <label for="file">Select PDF file:</label>
+                    <input type="file" id="file" name="file" accept=".pdf">
+                </div>
+                <div class="form-group">
+                    <label for="file-custom-name">Custom name (optional):</label>
+                    <input type="text" id="file-custom-name" name="custom_name"
+                        placeholder="Enter a custom name for the file">
+                </div>
+                <button type="submit">Convert</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Convert PDF from URL</h2>
+            <form id="url-upload-form">
+                <div class="form-group">
+                    <label for="url">PDF URL:</label>
+                    <input type="text" id="url" name="url" placeholder="https://example.com/document.pdf">
+                </div>
+                <div class="form-group">
+                    <label for="url-custom-name">Custom name (optional):</label>
+                    <input type="text" id="url-custom-name" name="custom_name"
+                        placeholder="Enter a custom name for the file">
+                </div>
+                <button type="submit">Convert</button>
+            </form>
+        </div>
+
+        <div id="status"></div>
+        <div id="loading" class="loading">Converting PDF</div>
+
+        <div class="files-list">
+            <h2>Recent Conversions</h2>
+            <div id="files-container"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // File upload form
+            document.getElementById('file-upload-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('file');
+                if (fileInput.files.length === 0) {
+                    showStatus('Please select a file.', 'error');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                if (!file.name.toLowerCase().endsWith('.pdf')) {
+                    showStatus('Please select a PDF file.', 'error');
+                    return;
+                }
+
+                convertFile(new FormData(this));
+            });
+
+            // URL upload form
+            document.getElementById('url-upload-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const url = document.getElementById('url').value.trim();
+                if (!url) {
+                    showStatus('Please enter a URL.', 'error');
+                    return;
+                }
+
+                if (!url.toLowerCase().endsWith('.pdf')) {
+                    showStatus('The URL should point to a PDF file.', 'error');
+                    return;
+                }
+
+                convertUrl(new FormData(this));
+            });
+
+            // Fetch and display existing files
+            fetchFiles();
+        });
+
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = type;
+            statusElement.style.display = 'block';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function convertFile(formData) {
+            showLoading(true);
+            fetch('/convert', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('Authentication failed. Please check your credentials.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showLoading(false);
+                    handleConversionResponse(data);
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('An error occurred: ' + error, 'error');
+                });
+        }
+
+        function convertUrl(formData) {
+            showLoading(true);
+            fetch('/convert', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('Authentication failed. Please check your credentials.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showLoading(false);
+                    handleConversionResponse(data);
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showStatus('An error occurred: ' + error, 'error');
+                });
+        }
+
+        function handleConversionResponse(data) {
+            if (data.success) {
+                showStatus('PDF converted successfully! ', 'success');
+                const link = document.createElement('a');
+                link.href = data.url;
+                link.textContent = 'View HTML';
+                link.target = '_blank';
+                document.getElementById('status').appendChild(link);
+                fetchFiles(); // Refresh the files list
+            } else {
+                showStatus('Error: ' + (data.error || 'Unknown error'), 'error');
+            }
+        }
+
+        function fetchFiles() {
+            fetch('/files', {
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('Authentication failed. Please check your credentials.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById('files-container');
+                    container.innerHTML = '';
+
+                    if (data.files && data.files.length > 0) {
+                        data.files.forEach(file => {
+                            const fileDiv = document.createElement('div');
+                            fileDiv.className = 'file-item';
+
+                            const link = document.createElement('a');
+                            link.href = file.url;
+                            link.textContent = file.name;
+                            link.target = '_blank';
+
+                            fileDiv.appendChild(link);
+                            container.appendChild(fileDiv);
+                        });
+                    } else {
+                        container.innerHTML = '<p>No files have been converted yet.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching files:', error);
+                    document.getElementById('files-container').innerHTML = '<p>Error loading files: ' + error.message + '</p>';
+                });
+        }
+    </script>
+</body>
+
+</html>
