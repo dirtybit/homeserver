@@ -14,13 +14,15 @@ services:
         max-file: "1"
     # networks:
     #   - traefik
+    #expose:
+    #  - "8581"
     labels:
       my.zone: dirtybit
       traefik.enable: true
       traefik.http.routers.homebridge.rule: Host(`${SUBDOMAIN:-homebridge}.${DOMAIN}`)
       traefik.http.routers.homebridge.entrypoints: websecure
       traefik.http.services.homebridge.loadbalancer.server.port: 8581
-      traefik.http.services.homebridge.loadbalancer.server.url: "http://host.docker.internal:8581"
+      # traefik.http.services.homebridge.loadbalancer.server.url: "http://host.docker.internal:8581"
 
 volumes:
   homebridge_data:
