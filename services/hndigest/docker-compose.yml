@@ -1,0 +1,29 @@
+services:
+  hndigest:
+    image: ghcr.io/dirtybit/hndigest:latest
+    ports:
+      - "${PORT:-9999}:9999"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-file:/data/hndigest.sqlite}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+    volumes:
+      - hndigest-data:/data
+    container_name: hndigest
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      my.zone: dirtybit
+      traefik.enable: true
+      traefik.http.routers.hndigest.rule: Host(`${SUBDOMAIN:-hndigest}.${DOMAIN}`)
+      traefik.http.routers.hndigest.entrypoints: websecure
+      traefik.http.services.hndigest.loadbalancer.server.port: 9999
+
+volumes:
+  hndigest-data:
+
+
+networks:
+  traefik:
+    name: dirtybit
+    external: true
